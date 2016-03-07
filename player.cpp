@@ -39,5 +39,14 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
      * TODO: Implement how moves your AI should play here. You should first
      * process the opponent's opponents move before calculating your own move
      */ 
+    // For now, ignore the time
+    
+    // If minimax, move all possibilities
+    if (testingMinimax) {
+        // TODO: choose best of all possible moves
+        //
+        // tmp return:
+        // return doMove(oponentsMove, msLeft);
+    }
     return NULL;
 }
