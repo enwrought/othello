@@ -4,6 +4,8 @@
 #include <iostream>
 #include "common.h"
 #include "board.h"
+#include <vector>
+
 using namespace std;
 
 class Player {
@@ -16,6 +18,13 @@ public:
 
     // Flag to tell if the player is running within the test_minimax context
     bool testingMinimax;
+
+private:
+    Side side;
+    Board* board;
+    float eval_board(Board* prop_board);
+    vector<Move*> get_all_moves(Side side, Board* prop_board);
+    float minimax(Board* b, Side s, int ply);
 };
 
 #endif

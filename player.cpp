@@ -1,4 +1,7 @@
 #include "player.h"
+#include <vector>
+
+using namespace std;
 
 /*
  * Constructor for the player; initialize everything here. The side your AI is
@@ -14,13 +17,78 @@ Player::Player(Side side) {
      * precalculating things, etc.) However, remember that you will only have
      * 30 seconds.
      */
+    this->side = side;
+    board = new Board();
 }
 
 /*
  * Destructor for the player.
  */
 Player::~Player() {
+    delete board;
 }
+
+
+
+/**
+ * @brief: Return list of all possible moves.
+ */
+vector<Move*> Player::get_all_moves(Side side, Board* prop_board) {
+    vector<Move*> moves;
+    for (int i = 0; i < 8; i++) {
+        for (int j = 0; j < 8; j++) {
+            Move *new_move = new Move(i, j);
+            if (prop_board->checkMove(new_move, side)) 
+                moves.push_back(new_move);
+            else
+                delete new_move;
+        }
+    }
+    return moves;
+}
+
+
+
+/**
+ * @brief: Evaluate the passed in board
+ */
+float Player::eval_board(Board* prop_board){
+    // TODO later: change to better heuristic
+    Side oppSide = side == WHITE ? BLACK : WHITE;
+    return prop_board->count(side) - prop_board->count(oppSide);
+}
+
+
+// it is side s's turn to make a move
+float Player::minimax(Board* b, Side s, int ply) {
+    if (ply == 0)
+        return eval_board(b);
+
+    Side opp = s == WHITE ? BLACK : WHITE; 
+    vector<Move*> moves = get_all_moves(s, b);
+    // choose the one that minimizes the value of next move
+    float best_score = eval_board(b);
+    Move* best_move = NULL;
+    for (unsigned int i = 0; i < moves.size(); i++) {
+        Board* new_board = b->copy();
+        new_board->doMove(moves[i], s);
+        float board_val = minimax(new_board, opp, ply-1);
+        if (s == side) {
+            if (board_val > best_score) {
+                best_score = board_val;
+                best_move = moves[i];
+            }
+        }
+        else {
+            if (board_val < best_score) {
+                best_score = board_val;
+                best_move = moves[i];
+            }
+        }
+    }
+    return best_score;
+}
+
 
 /*
  * Compute the next move given the opponent's last move. Your AI is
@@ -39,5 +107,52 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
      * TODO: Implement how moves your AI should play here. You should first
      * process the opponent's opponents move before calculating your own move
      */ 
+    // For now, ignore the time
+
+    // Do move from opponent
+    Side opp = side == WHITE ? BLACK : WHITE;
+    board->doMove(opponentsMove, opp);
+    
+    // If minimax, move all possibilities
+    //if (testingMinimax) {
+        int ply = 4;
+        if (testingMinimax)
+            ply = 2;
+
+        float best_score = -64;
+        Move *best_move = NULL;
+        vector<Move*> moves = get_all_moves(side, board);
+        for (unsigned int i = 0; i < moves.size(); i++) {
+            Board* new_board = board->copy();
+            new_board->doMove(moves[i], side);
+            float board_val = minimax(new_board, opp, ply-1);
+            if (board_val > best_score) {
+                best_score = board_val;
+                best_move = moves[i];
+            }
+        }
+        board->doMove(best_move, side);
+        return best_move;
+    //}
+    /*
+    else {
+        // Just choose the best move out of the list of moves
+        float best_score = -64;
+        Move *best_move = NULL;
+        vector<Move*> moves = get_all_moves(side, board);
+        for (unsigned int i = 0; i < moves.size(); i++) {
+            Board* new_board = board->copy();
+            new_board->doMove(moves[i], side);
+            float board_val = eval_board(new_board);
+            if (board_val > best_score) {
+                best_score = board_val;
+                best_move = moves[i];
+            }
+        }
+        board->doMove(best_move, side);
+        return best_move;
+    }
+
     return NULL;
+    */
 }
