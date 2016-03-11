@@ -59,6 +59,36 @@ float Player::eval_board(Board* prop_board){
 }
 
 
+// it is side s's turn to make a move
+float Player::minimax(Board* b, Side s, int ply) {
+    if (ply == 0)
+        return eval_board(b);
+
+    Side opp = s == WHITE ? BLACK : WHITE; 
+    vector<Move*> moves = get_all_moves(s, b);
+    // choose the one that minimizes the value of next move
+    float best_score = eval_board(b);
+    Move* best_move = NULL;
+    for (unsigned int i = 0; i < moves.size(); i++) {
+        Board* new_board = b->copy();
+        new_board->doMove(moves[i], s);
+        float board_val = minimax(new_board, opp, ply-1);
+        if (s == side) {
+            if (board_val > best_score) {
+                best_score = board_val;
+                best_move = moves[i];
+            }
+        }
+        else {
+            if (board_val < best_score) {
+                best_score = board_val;
+                best_move = moves[i];
+            }
+        }
+    }
+    return best_score;
+}
+
 
 /*
  * Compute the next move given the opponent's last move. Your AI is
@@ -80,18 +110,31 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
     // For now, ignore the time
 
     // Do move from opponent
-    if (side == WHITE)
-        board->doMove(opponentsMove, BLACK);
-    else
-        board->doMove(opponentsMove, WHITE);
+    Side opp = side == WHITE ? BLACK : WHITE;
+    board->doMove(opponentsMove, opp);
     
     // If minimax, move all possibilities
-    if (testingMinimax) {
-        // TODO: choose best of all possible moves
-        //
-        // tmp return:
-        // return doMove(oponentsMove, msLeft);
-    }
+    //if (testingMinimax) {
+        int ply = 4;
+        if (testingMinimax)
+            ply = 2;
+
+        float best_score = -64;
+        Move *best_move = NULL;
+        vector<Move*> moves = get_all_moves(side, board);
+        for (unsigned int i = 0; i < moves.size(); i++) {
+            Board* new_board = board->copy();
+            new_board->doMove(moves[i], side);
+            float board_val = minimax(new_board, opp, ply-1);
+            if (board_val > best_score) {
+                best_score = board_val;
+                best_move = moves[i];
+            }
+        }
+        board->doMove(best_move, side);
+        return best_move;
+    //}
+    /*
     else {
         // Just choose the best move out of the list of moves
         float best_score = -64;
@@ -111,4 +154,5 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
     }
 
     return NULL;
+    */
 }

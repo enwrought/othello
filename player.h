@@ -24,6 +24,7 @@ private:
     Board* board;
     float eval_board(Board* prop_board);
     vector<Move*> get_all_moves(Side side, Board* prop_board);
+    float minimax(Board* b, Side s, int ply);
 };
 
 #endif
