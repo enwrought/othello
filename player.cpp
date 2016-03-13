@@ -1,5 +1,6 @@
 #include "player.h"
 #include <vector>
+#define MAX_SCORE (120+60+49)
 
 using namespace std;
 
@@ -72,7 +73,7 @@ float Player::minimax(Board* b, Side s, int ply, float alpha, float beta) {
     // choose the one that minimizes the value of next move
     if (moves.size() == 0)
         return eval_board(b);
-    float best_score = s == side ? -100 : 100;
+    float best_score = s == side ? -MAX_SCORE : MAX_SCORE;
 
     unsigned int i;
     for (i = 0; i < moves.size(); i++) {
@@ -128,7 +129,6 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
      * TODO: Implement how moves your AI should play here. You should first
      * process the opponent's opponents move before calculating your own move
      */ 
-    // For now, ignore the time
 
     // Do move from opponent
     Side opp = side == WHITE ? BLACK : WHITE;
@@ -138,7 +138,27 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
     if (testingMinimax)
         ply = 2;
 
-    float best_score = -100;
+    // Check that we are okay on time.  If not, we need to decrease ply.
+    float percentDone = (board->countWhite() + board->countBlack()) / 64.0;
+    float percentTimeLeft = msLeft / 960000.0;
+
+    // Decreasing ply by 1-2 saves a significant bit of time
+    // Only decrease it if there are too many spaces left and not enough time
+    if (percentDone < 52.0 / 64.0) {
+        if (percentTimeLeft < 2 * percentDone) {
+            ply -= 1;
+            cerr << "Decreased ply by 1." << endl;
+        }
+        else if (percentTimeLeft < percentDone) {
+            ply -= 2;
+            cerr << "Decreased ply by 2." << endl;
+        }
+    }
+    else {
+        ply = 10;
+    }
+
+    float best_score = -MAX_SCORE;
     Move *best_move = NULL;
     vector<Move*> moves = get_all_moves(side, board);
     for (unsigned int i = 0; i < moves.size(); i++) {

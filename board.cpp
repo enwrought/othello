@@ -56,9 +56,9 @@ float Board::get_value(int x, int y) {
     float beta = 1.0 - alpha;
 
     if (x_on_edge && y_on_edge)
-        return beta * 30 + alpha;
+        return beta * 35 + alpha;
     else if (x_on_edge || y_on_edge)
-        return beta * 7.5 + alpha;
+        return beta * 8 + alpha;
     else
         return 1;
 }
@@ -150,10 +150,6 @@ void Board::doMove(Move *m, Side side) {
                 y += dy;
                 while (onBoard(x, y) && get(other, x, y)) {
                     set(side, x, y);
-                    if (side == WHITE)
-                        value += 2 * get_value(x, y);
-                    else
-                        value -= 2 * get_value(x, y);
                     x += dx;
                     y += dy;
                 }
