@@ -60,28 +60,37 @@ float Player::eval_board(Board* prop_board){
 
 
 // it is side s's turn to make a move
-float Player::minimax(Board* b, Side s, int ply) {
+float Player::minimax(Board* b, Side s, int ply, float alpha, float beta) {
     if (ply == 0)
         return eval_board(b);
 
     Side opp = s == WHITE ? BLACK : WHITE; 
     vector<Move*> moves = get_all_moves(s, b);
     // choose the one that minimizes the value of next move
-    float best_score = eval_board(b);
+    float best_score = s == side ? -64 : 64;
     Move* best_move = NULL;
     for (unsigned int i = 0; i < moves.size(); i++) {
         Board* new_board = b->copy();
         new_board->doMove(moves[i], s);
-        float board_val = minimax(new_board, opp, ply-1);
+        float board_val = minimax(new_board, opp, ply-1, alpha, beta);
         if (s == side) {
+            // maximizing player
             if (board_val > best_score) {
                 best_score = board_val;
+                if (best_score > alpha)
+                    alpha = best_score;
+                if (beta <= alpha)
+                    break;
                 best_move = moves[i];
             }
         }
         else {
             if (board_val < best_score) {
                 best_score = board_val;
+                if (best_score < beta)
+                    beta = best_score;
+                if (beta <= alpha)
+                    break;
                 best_move = moves[i];
             }
         }
@@ -113,46 +122,24 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
     Side opp = side == WHITE ? BLACK : WHITE;
     board->doMove(opponentsMove, opp);
     
-    // If minimax, move all possibilities
-    //if (testingMinimax) {
-        int ply = 4;
-        if (testingMinimax)
-            ply = 2;
+    int ply = 8;
+    if (testingMinimax)
+        ply = 2;
 
-        float best_score = -64;
-        Move *best_move = NULL;
-        vector<Move*> moves = get_all_moves(side, board);
-        for (unsigned int i = 0; i < moves.size(); i++) {
-            Board* new_board = board->copy();
-            new_board->doMove(moves[i], side);
-            float board_val = minimax(new_board, opp, ply-1);
-            if (board_val > best_score) {
-                best_score = board_val;
-                best_move = moves[i];
-            }
+    float best_score = -64;
+    Move *best_move = NULL;
+    vector<Move*> moves = get_all_moves(side, board);
+    for (unsigned int i = 0; i < moves.size(); i++) {
+        Board* new_board = board->copy();
+        new_board->doMove(moves[i], side);
+        float board_val = minimax(new_board, opp, ply-1, -64, 64);
+        if (board_val > best_score) {
+            best_score = board_val;
+            best_move = moves[i];
         }
-        board->doMove(best_move, side);
-        return best_move;
-    //}
-    /*
-    else {
-        // Just choose the best move out of the list of moves
-        float best_score = -64;
-        Move *best_move = NULL;
-        vector<Move*> moves = get_all_moves(side, board);
-        for (unsigned int i = 0; i < moves.size(); i++) {
-            Board* new_board = board->copy();
-            new_board->doMove(moves[i], side);
-            float board_val = eval_board(new_board);
-            if (board_val > best_score) {
-                best_score = board_val;
-                best_move = moves[i];
-            }
-        }
-        board->doMove(best_move, side);
-        return best_move;
     }
-
-    return NULL;
-    */
+    cerr << "enwrought moved: (" << best_move->x << "," << best_move->y
+        << ")" << endl;
+    board->doMove(best_move, side);
+    return best_move;
 }
