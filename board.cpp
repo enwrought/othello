@@ -10,8 +10,6 @@ Board::Board() {
     taken.set(4 + 8 * 4);
     black.set(4 + 8 * 3);
     black.set(3 + 8 * 4);
-
-    value = 0.0;
 }
 
 /*
@@ -27,7 +25,6 @@ Board *Board::copy() {
     Board *newBoard = new Board();
     newBoard->black = black;
     newBoard->taken = taken;
-    newBoard->value = value;
     return newBoard;
 }
 
@@ -48,13 +45,20 @@ bool Board::onBoard(int x, int y) {
     return(0 <= x && x < 8 && 0 <= y && y < 8);
 }
 
+/**
+ * Value of a square, depending on the number of spots taken
+ * on the board.
+ */
 float Board::get_value(int x, int y) {
     bool x_on_edge = x == 0 || x == 7;
     bool y_on_edge = y == 0 || y == 7;
+    float alpha = (taken.count() - 4.0) / (64.0-4.0);
+    float beta = 1.0 - alpha;
+
     if (x_on_edge && y_on_edge)
-        return 5;
+        return beta * 30 + alpha;
     else if (x_on_edge || y_on_edge)
-        return 2;
+        return beta * 7.5 + alpha;
     else
         return 1;
 }
@@ -202,5 +206,18 @@ void Board::setBoard(char data[]) {
  * Return the value of the board if player (enwrought) is Side s
  */
 float Board::get_board_value(Side s) {
+    float value = 0.0;
+
+    for (int x = 0; x < 8; x++) {
+        for (int y = 0; y < 8; y++) {
+            if (occupied(x,y)) {
+                float contrib = get_value(x, y);
+                if (get(WHITE, x, y))
+                    value += contrib;
+                else
+                    value -= contrib;
+            }
+        }
+    }
     return (s == WHITE) ? value : -value;
 }

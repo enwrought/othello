@@ -77,6 +77,7 @@ float Player::minimax(Board* b, Side s, int ply, float alpha, float beta) {
         Board* new_board = b->copy();
         new_board->doMove(moves[i], s);
         float board_val = minimax(new_board, opp, ply-1, alpha, beta);
+        delete moves[i];
         delete new_board;
         if (s == side) {
             // maximizing player
@@ -152,7 +153,7 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
             moves.size() << endl;
     else
         cerr << "enwrought moved: (" << best_move->x << "," << best_move->y
-        << ")" << endl;
+        << ") with value " << best_score << endl;
     board->doMove(best_move, side);
     return best_move;
 }
