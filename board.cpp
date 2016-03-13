@@ -10,6 +10,8 @@ Board::Board() {
     taken.set(4 + 8 * 4);
     black.set(4 + 8 * 3);
     black.set(3 + 8 * 4);
+
+    value = 0.0;
 }
 
 /*
@@ -25,6 +27,7 @@ Board *Board::copy() {
     Board *newBoard = new Board();
     newBoard->black = black;
     newBoard->taken = taken;
+    newBoard->value = value;
     return newBoard;
 }
 
@@ -43,6 +46,17 @@ void Board::set(Side side, int x, int y) {
 
 bool Board::onBoard(int x, int y) {
     return(0 <= x && x < 8 && 0 <= y && y < 8);
+}
+
+float Board::get_value(int x, int y) {
+    bool x_on_edge = x == 0 || x == 7;
+    bool y_on_edge = y == 0 || y == 7;
+    if (x_on_edge && y_on_edge)
+        return 5;
+    else if (x_on_edge || y_on_edge)
+        return 2;
+    else
+        return 1;
 }
 
  
@@ -132,6 +146,10 @@ void Board::doMove(Move *m, Side side) {
                 y += dy;
                 while (onBoard(x, y) && get(other, x, y)) {
                     set(side, x, y);
+                    if (side == WHITE)
+                        value += 2 * get_value(x, y);
+                    else
+                        value -= 2 * get_value(x, y);
                     x += dx;
                     y += dy;
                 }
@@ -177,4 +195,12 @@ void Board::setBoard(char data[]) {
             taken.set(i);
         }
     }
+}
+
+
+/**
+ * Return the value of the board if player (enwrought) is Side s
+ */
+float Board::get_board_value(Side s) {
+    return (s == WHITE) ? value : -value;
 }

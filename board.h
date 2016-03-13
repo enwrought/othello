@@ -15,6 +15,13 @@ private:
     bool get(Side side, int x, int y);
     void set(Side side, int x, int y);
     bool onBoard(int x, int y);
+
+    float get_value(int x, int y);
+
+    /**
+     * Value of board for WHITE
+     */
+    float value;
       
 public:
     Board();
@@ -28,6 +35,8 @@ public:
     int count(Side side);
     int countBlack();
     int countWhite();
+
+    float get_board_value(Side s);
 
     void setBoard(char data[]);
 };
