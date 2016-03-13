@@ -18,10 +18,6 @@ private:
 
     float get_value(int x, int y);
 
-    /**
-     * Value of board for WHITE
-     */
-    float value;
       
 public:
     Board();

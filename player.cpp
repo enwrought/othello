@@ -73,7 +73,9 @@ float Player::minimax(Board* b, Side s, int ply, float alpha, float beta) {
     if (moves.size() == 0)
         return eval_board(b);
     float best_score = s == side ? -100 : 100;
-    for (unsigned int i = 0; i < moves.size(); i++) {
+
+    unsigned int i;
+    for (i = 0; i < moves.size(); i++) {
         Board* new_board = b->copy();
         new_board->doMove(moves[i], s);
         float board_val = minimax(new_board, opp, ply-1, alpha, beta);
@@ -99,6 +101,12 @@ float Player::minimax(Board* b, Side s, int ply, float alpha, float beta) {
             }
         }
     }
+
+    // Free up memory
+    for (i+=1; i < moves.size(); i++) {
+        delete moves[i];
+    }
+    moves.clear();
     return best_score;
 }
 
@@ -126,7 +134,7 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
     Side opp = side == WHITE ? BLACK : WHITE;
     board->doMove(opponentsMove, opp);
     
-    int ply = 6;
+    int ply = 8;
     if (testingMinimax)
         ply = 2;
 
@@ -141,6 +149,7 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
         delete new_board;
         if (board_val >= best_score) {
             best_score = board_val;
+
             delete best_move;
             best_move = moves[i];
         }
@@ -155,5 +164,7 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
         cerr << "enwrought moved: (" << best_move->x << "," << best_move->y
         << ") with value " << best_score << endl;
     board->doMove(best_move, side);
+
+    moves.clear();
     return best_move;
 }
